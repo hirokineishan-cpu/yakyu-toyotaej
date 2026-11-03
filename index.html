@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#b3001b">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>トヨタ自動車東日本 投手陣</title>
+<!-- 起動を早くするための2つ。
+     ・前回開いていたタブの部品を、この時点で取りに行かせる（外枠の解析を待たない）
+     ・スプレッドシートとの接続も先に張っておく（最初の通信が速くなる） -->
+<script>
+(function () {
+  var t = '';
+  try {
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf('hsp-tab-') === 0) { t = localStorage.getItem(k) || ''; break; }
+    }
+  } catch (e) {}
+  var f = { physical: 'physical', trackman: 'trackman', session: 'session', me: 'login' }[t] || 'trackman';
+  var l = document.createElement('link');
+  l.rel = 'modulepreload'; l.href = './mod-' + f + '.js';
+  document.head.appendChild(l);
+})();
+</script>
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="icon" href="./icon-192.png">
+<style>
+/* ==== 共通（両アプリから持ち上げた配色と土台） ==== */
+:root{
+  --ink:#152029; --ink2:#3d4b54; --muted:#6d7c82;
+  --paper:#ffffff; --ground:#e7ece8; --raise:#f3f7f3; --line:#c9d3cd;
+  --grass:#2e6b4a; --grassDeep:#1f4e36; --claySoft:#e6cdc0; --clay:#b4552f;
+  --strike:#b4552f; --ball:#2b6699; --foul:#a8790c; --inplay:#2e6b4a;
+  --accent:#2e6b4a; --accentInk:#ffffff;
+  --shadow:0 1px 2px rgba(21,32,41,.10), 0 6px 16px rgba(21,32,41,.06);
+  --r:10px;
+  --jp:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  --num:"Barlow Condensed","Hiragino Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+    --ink:#e7eee9; --ink2:#b6c3bb; --muted:#8a9a91;
+    --paper:#18211f; --ground:#0e1615; --raise:#212c29; --line:#2e3d38;
+    --grass:#4e9e73; --grassDeep:#2b5f45; --claySoft:#4a3128; --clay:#d8794f;
+    --strike:#d8794f; --ball:#5f9fd0; --foul:#d2a63d; --inplay:#4e9e73;
+    --accent:#4e9e73; --accentInk:#0e1615;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.28);
+  }}
+:root[data-theme="dark"]{
+  --ink:#e7eee9; --ink2:#b6c3bb; --muted:#8a9a91;
+  --paper:#18211f; --ground:#0e1615; --raise:#212c29; --line:#2e3d38;
+  --grass:#4e9e73; --grassDeep:#2b5f45; --claySoft:#4a3128; --clay:#d8794f;
+  --strike:#d8794f; --ball:#5f9fd0; --foul:#d2a63d; --inplay:#4e9e73;
+  --accent:#4e9e73; --accentInk:#0e1615;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--jp); font-size:14px; line-height:1.45;
+  -webkit-text-size-adjust:100%; touch-action:manipulation; -webkit-tap-highlight-color:transparent; overscroll-behavior:none;
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+:root{
+  color-scheme:light;
+  --ink:#152029; --ink2:#3d4b54; --muted:#6d7c82;
+  --paper:#ffffff; --ground:#e7ece8; --raise:#f3f7f3; --line:#c9d3cd;
+  --grass:#2e6b4a; --grassDeep:#1f4e36; --claySoft:#e6cdc0; --clay:#b4552f;
+  --accent:#2e6b4a; --accentInk:#ffffff;
+  --hit:#1e8a4c; --out:#8d9aa0; --foul:#a8790c;
+  --heat0:#fbf1ea; --heat1:#e9a67f; --heat2:#b4552f; --heat3:#5e2812;
+  --bar:#2b6699;
+  --t1:#2a78d6; --t2:#eb6834; --t3:#1baf7a; --t4:#eda100; --t5:#e87ba4; --t6:#008300; --t7:#4a3aa7; --t8:#e34948; --t0:#8d9aa0;
+  --shadow:0 1px 2px rgba(21,32,41,.10), 0 6px 16px rgba(21,32,41,.06);
+  --r:10px;
+  --jp:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  --num:"Barlow Condensed","Hiragino Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ink:#e7eee9; --ink2:#b6c3bb; --muted:#8a9a91;
+    --paper:#18211f; --ground:#0e1615; --raise:#212c29; --line:#2e3d38;
+    --grass:#4e9e73; --grassDeep:#2b5f45; --claySoft:#4a3128; --clay:#d8794f;
+    --accent:#4e9e73; --accentInk:#0e1615;
+    --hit:#2f9a62; --out:#6f7f84; --foul:#d2a63d;
+    --heat0:#2a221e; --heat1:#7a3f24; --heat2:#d8794f; --heat3:#f6c7a8;
+    --bar:#5f9fd0;
+    --t1:#3987e5; --t2:#d95926; --t3:#199e70; --t4:#c98500; --t5:#d55181; --t6:#008300; --t7:#9085e9; --t8:#e66767; --t0:#6f7f84;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.28);
+  }}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ink:#e7eee9; --ink2:#b6c3bb; --muted:#8a9a91;
+  --paper:#18211f; --ground:#0e1615; --raise:#212c29; --line:#2e3d38;
+  --grass:#4e9e73; --grassDeep:#2b5f45; --claySoft:#4a3128; --clay:#d8794f;
+  --accent:#4e9e73; --accentInk:#0e1615;
+  --hit:#2f9a62; --out:#6f7f84; --foul:#d2a63d;
+  --heat0:#2a221e; --heat1:#7a3f24; --heat2:#d8794f; --heat3:#f6c7a8;
+  --bar:#5f9fd0;
+  --t1:#3987e5; --t2:#d95926; --t3:#199e70; --t4:#c98500; --t5:#d55181; --t6:#008300; --t7:#9085e9; --t8:#e66767; --t0:#6f7f84;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 16px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font-family:var(--jp); font-size:14px; line-height:1.45; -webkit-text-size-adjust:100%}
+@page{size:A4; margin:11mm}
+html.prt,html.prt[data-theme="dark"]{ color-scheme:light;
+  --ink:#152029; --ink2:#3d4b54; --muted:#6d7c82; --paper:#ffffff; --ground:#ffffff; --raise:#f3f7f3; --line:#c9d3cd;
+  --grass:#2e6b4a; --grassDeep:#1f4e36; --claySoft:#e6cdc0; --clay:#b4552f; --accent:#2e6b4a; --accentInk:#ffffff;
+  --hit:#1e8a4c; --out:#8d9aa0; --foul:#a8790c; --heat0:#fbf1ea; --heat1:#e9a67f; --heat2:#b4552f; --heat3:#5e2812; --bar:#2b6699; --shadow:none;
+  --t1:#2a78d6; --t2:#eb6834; --t3:#1baf7a; --t4:#eda100; --t5:#e87ba4; --t6:#008300; --t7:#4a3aa7; --t8:#e34948; --t0:#8d9aa0; }
+@media print{body{background:#fff; color:#152029}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* ==== 外枠 ==== */
+:root{ --barH:44px }
+/* 記録タブだけは画面ぴったりの固定レイアウト（自分で中身をスクロールさせる）。
+   解析・フィジカルは普通に画面ごとスクロールさせる。 */
+body.t-record{ overflow:hidden }
+#bar{
+  position:fixed; top:0; left:0; right:0; height:var(--barH); z-index:300;
+  display:flex; align-items:stretch; gap:0;
+  background:var(--grassDeep); color:#fff;
+  padding-top:env(safe-area-inset-top);
+  box-shadow:0 1px 0 rgba(0,0,0,.18);
+}
+#bar .tt{
+  display:flex; align-items:center; padding:0 12px; font-weight:700; font-size:13px;
+  letter-spacing:.04em; white-space:nowrap; opacity:.92;
+}
+#bar nav{ display:flex; min-width:0 }
+#bar button{
+  min-width:0; appearance:none; border:0; background:transparent; color:#fff;
+  font:inherit; font-size:13.5px; font-weight:600; letter-spacing:.03em;
+  padding:0 20px; cursor:pointer; position:relative; opacity:.62;
+  border-radius:0; transition:opacity .12s; white-space:nowrap;
+}
+#bar button:hover{ opacity:.85 }
+#bar button[aria-selected="true"]{ opacity:1 }
+#bar button[hidden]{ display:none }
+#bar button .sm{ display:none }
+#bar button[aria-selected="true"]::after{
+  content:""; position:absolute; left:10%; right:10%; bottom:0; height:3px;
+  background:#fff; border-radius:3px 3px 0 0;
+}
+#bar button:focus-visible{ outline:2px solid #fff; outline-offset:-3px }
+main{ margin-top:calc(var(--barH) + env(safe-area-inset-top)) }
+main > section[hidden]{ display:none !important }
+#boot{ padding:28px 18px; color:var(--muted); font-size:13px; text-align:center }
+#boot b{ display:block; color:var(--ink); font-size:14px; margin-bottom:6px }
+
+@media (max-width:560px){
+  /* タブが4つになったので、スマホでは文字を少し詰めて重ならないようにする */
+  #bar .tt{ padding:0 8px; font-size:11.5px; max-width:26vw; overflow:hidden; text-overflow:ellipsis }
+  #bar nav{ flex:1 }
+  #bar button{ flex:1; padding:0 2px; font-size:12px; letter-spacing:0 }
+}
+@media (max-width:370px){
+  #bar .tt{ display:none }
+}
+/* タブが5つのとき（強化・管理）：スマホではチーム名を隠し、「セッション記録」は短く */
+@media (max-width:560px){
+  #bar.many .tt{ display:none }
+  #bar.many button{ font-size:11.5px; padding:0 1px }
+  #bar button .lg{ display:none }
+  #bar button .sm{ display:inline }
+}
+@media (min-width:561px) and (max-width:760px){
+  #bar.many button{ padding:0 10px }
+}
+/* スマホ横向き：高さが足りないので、タブバーを細くし、記録画面の球速パッドを1段にする
+   （結果ボタンが球速パッドに重ならないように） */
+@media (max-height:520px) and (orientation:landscape){
+  :root{ --barH:32px }
+  #bar button{ font-size:12px; padding:0 14px }
+  #bar .tt{ font-size:11.5px }
+  #tab-record .rs-mid #pad{ grid-template-columns:repeat(12,minmax(0,1fr)) }
+  #tab-record .rs-mid #pad .btn{ padding-top:5px; padding-bottom:5px }
+  #tab-record #mid-t{ display:none }
+}
+/* 印刷のときはタブバーを出さない */
+@media print{
+  #bar{ display:none !important }
+  main{ margin-top:0 !important }
+  body.t-record{ overflow:visible }
+}
+html.prt #bar{ display:none !important }
+html.prt main{ margin-top:0 !important }
+html.prt body.t-record{ overflow:visible }
+
+/* ==== チームの配色：赤×白（トヨタ自動車東日本） ====
+   ここより上の配色をまとめて上書きする。緑の「良い」「安打」などの意味の色はそのまま */
+:root{
+  --ink:#1f1a1a; --ink2:#4a4040; --muted:#7a6f6f;
+  --paper:#ffffff; --ground:#f3eeee; --raise:#faf5f5; --line:#dccfcf;
+  --grass:#b3001b; --grassDeep:#8e0015; --accent:#c8102e; --accentInk:#ffffff; --field:#2e6b4a;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ink:#f3e9e9; --ink2:#d2c2c2; --muted:#9c8a8a;
+  --paper:#1f1a1a; --ground:#120e0e; --raise:#2a2323; --line:#413636;
+  --grass:#e04b5f; --grassDeep:#8e0015; --accent:#e04b5f; --accentInk:#120e0e; --field:#4e9e73;
+}}
+:root[data-theme="dark"]{
+  --ink:#f3e9e9; --ink2:#d2c2c2; --muted:#9c8a8a;
+  --paper:#1f1a1a; --ground:#120e0e; --raise:#2a2323; --line:#413636;
+  --grass:#e04b5f; --grassDeep:#8e0015; --accent:#e04b5f; --accentInk:#120e0e; --field:#4e9e73;
+}
+html.prt,html.prt[data-theme="dark"]{
+  --ink:#1f1a1a; --ink2:#4a4040; --muted:#7a6f6f; --paper:#ffffff; --ground:#ffffff; --raise:#faf5f5; --line:#dccfcf;
+  --grass:#b3001b; --grassDeep:#8e0015; --accent:#c8102e; --accentInk:#ffffff; --field:#2e6b4a;
+}
+</style>
+</head>
+<body>
+
+<header id="bar">
+  <span class="tt" id="bar-team">野球記録</span>
+  <nav role="tablist">
+    <button role="tab" data-tab="trackman" aria-selected="true">Trackman</button>
+    <button role="tab" data-tab="physical" aria-selected="false">フィジカル</button>
+    <button role="tab" data-tab="session"  aria-selected="false"><span class="lg">セッション記録</span><span class="sm">セッション</span></button>
+    <button role="tab" data-tab="me"       aria-selected="false">ログイン</button>
+  </nav>
+</header>
+
+<main>
+  <section id="tab-physical" hidden></section>
+  <section id="tab-trackman" hidden></section>
+  <section id="tab-session" hidden></section>
+  <section id="tab-me" hidden></section>
+  <div id="boot"><b>読み込んでいます…</b>しばらく待っても変わらないときは、画面を下に引いて更新してください。</div>
+</main>
+
+<script type="module">
+/* 外枠：設定を配り、タブに応じて部品を読み込むだけ。記録や解析の中身には関与しない。 */
+const CFG = {
+  TEAM_ID:"toyotaej",
+  TEAM_NAME:"トヨタ自動車東日本",
+  APP_URL_B64:"",
+  MIGRATE_LEGACY:false,
+  STORE:""            /* 試験中だけ "-t" などを入れて、本番の保存領域と分ける */
+};
+const CORE = {
+  cfg: CFG,
+  barH: () => (document.getElementById('bar')?.offsetHeight || 0)
+};
+
+const FILES = { physical:'./mod-physical.js', trackman:'./mod-trackman.js', session:'./mod-session.js', me:'./mod-login.js' };
+const TABKEY = 'hsp-tab-' + CFG.TEAM_ID + CFG.STORE;
+const loaded = {};
+const boot = document.getElementById('boot');
+if (CFG.TEAM_NAME) document.getElementById('bar-team').textContent = CFG.TEAM_NAME;
+
+/* だれがログインしているかで、出すタブを決める（中身はサーバー側でも断っている）。
+     スタッフ（管理・強化）… Trackman・フィジカル・セッション記録・ログイン（アカウント）
+     未ログイン／記録・閲覧 … ログイン画面だけ
+     選手                  … 自分の Trackman・フィジカル・セッション記録・マイページ
+     選手用のリンク（…/#me）で開いて、まだログインしていない … マイページ（ログイン）だけ
+   ログインし直したときにも合うように、ときどき見直す。 */
+const CONN_KEY = 'hsp-conn-' + CFG.TEAM_ID + CFG.STORE;
+const PLINK_KEY = 'hsp-plink-' + CFG.TEAM_ID + CFG.STORE;
+if (location.hash === '#me') { try { localStorage.setItem(PLINK_KEY, '1'); } catch(e){} }
+const TABS = { staff:['trackman','physical','session','me'], user:['me'],
+               player:['trackman','physical','session','me'], pguest:['me'] };
+function roleNow(){
+  try { const c = JSON.parse(localStorage.getItem(CONN_KEY) || 'null'); return String(c && c.token && c.user && c.user.role || ''); } catch(e){ return ''; }
+}
+function modeNow(){
+  const r = roleNow();
+  if (r.indexOf('管理') === 0 || r.indexOf('強化') === 0) return 'staff';
+  if (r.indexOf('選手') === 0) return 'player';
+  if (r) return 'user';
+  let pl = false; try { pl = localStorage.getItem(PLINK_KEY) === '1'; } catch(e){}
+  return pl ? 'pguest' : 'user';
+}
+CORE.mode = modeNow;
+let modeCur = null;
+function applyMode(){
+  const m = modeNow(); if (m === modeCur) return false;
+  const was = modeCur; modeCur = m;
+  /* 選手とスタッフが入れ替わったときは、読み込んだ部品を作り直すために読み直す */
+  if (was && (was === 'player') !== (m === 'player') && Object.keys(loaded).length) { location.reload(); return true; }
+  const vis = TABS[m];
+  document.querySelectorAll('#bar button[data-tab]').forEach(b => { b.hidden = vis.indexOf(b.dataset.tab) < 0; });
+  document.getElementById('bar').classList.toggle('many', vis.length >= 5);
+  const cur = document.querySelector('#bar button[aria-selected="true"]');
+  if (was && (!cur || vis.indexOf(cur.dataset.tab) < 0)) show(vis[0]);
+  return false;
+}
+async function show(key){
+  if (applyMode()) return;
+  if (TABS[modeCur].indexOf(key) < 0) key = TABS[modeCur][0];
+  const sections = document.querySelectorAll('main > section');
+  sections.forEach(s => { s.hidden = (s.id !== 'tab-' + key); });
+  document.body.classList.toggle('t-record', key === 'record');
+  document.querySelectorAll('#bar button').forEach(b => {
+    b.setAttribute('aria-selected', String(b.dataset.tab === key));
+  });
+  try { localStorage.setItem(TABKEY, key); } catch(e){}
+  const root = document.getElementById('tab-' + key);
+  if (!loaded[key]) {
+    loaded[key] = true;
+    boot.hidden = false;
+    boot.innerHTML = '<b>' + ({physical:'フィジカル',trackman:'Trackman',session:'セッション記録',me:'ログイン'}[key]) + 'を読み込んでいます…</b>';
+    try {
+      const m = await import(FILES[key]);
+      await m.mount(root, CORE);
+      boot.hidden = true;
+    } catch (e) {
+      loaded[key] = false;
+      boot.hidden = false;
+      boot.innerHTML = '<b>読み込めませんでした</b>' + String(e && e.message || e) +
+        '<br>電波の届くところで開き直してください。';
+      return;
+    }
+  }
+  boot.hidden = true;
+  root.dispatchEvent(new CustomEvent('hsp:show'));
+}
+
+document.getElementById('bar').addEventListener('click', e => {
+  const b = e.target.closest('button[data-tab]');
+  if (b) show(b.dataset.tab);
+});
+
+let first = 'trackman';
+try { const v = localStorage.getItem(TABKEY); if (v && FILES[v]) first = v; } catch(e){}
+show(first);
+setInterval(applyMode, 2500);
+window.addEventListener('focus', applyMode);
+/* 開いたまま選手用リンク（#me）に切り替わったとき */
+window.addEventListener('hashchange', () => {
+  if (location.hash !== '#me') return;
+  try { localStorage.setItem(PLINK_KEY, '1'); } catch(e){}
+  if (modeNow() !== modeCur) { if (Object.keys(loaded).length) location.reload(); else applyMode(); }
+});
+
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  /* 新しい版が入ったとき、これまでは「もう一度開き直す」まで古い画面のままだった。
+     開いた直後（20秒以内）に入れ替わったときだけ、こちらで1回だけ読み直す。
+     試合中など、しばらく使ってからの入れ替わりでは何もしない（次に開いたときに入る）。*/
+  const had = !!navigator.serviceWorker.controller;
+  let once = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!had || once || performance.now() > 20000) return;
+    once = true; location.reload();
+  });
+  navigator.serviceWorker.register("./sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "トヨタ自動車東日本 投手陣",
+  "short_name": "トヨタ東日本",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f3eeee",
+  "theme_color": "#b3001b",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
