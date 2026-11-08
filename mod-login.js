@@ -78,7 +78,8 @@ export function mount(ROOT, CORE) {
       <label class="f">パスワード<input id="me-pw" type="password" autocomplete="current-password"></label>
       <button class="b primary" id="me-login" ${busy ? 'disabled' : ''}>${busy ? 'ログイン中…' : 'ログイン'}</button>
       <div class="msg">${esc(msg)}</div>
-      <p class="note" style="margin-top:12px">スタッフは Trackman・フィジカル・セッション記録が、選手は自分の分だけが見られます。<br>IDとパスワードは管理者から受け取ってください。</p></div></div>`;
+      <p class="note" style="margin-top:12px">スタッフは Trackman・フィジカル・セッション記録が、選手は自分の分だけが見られます。<br>IDとパスワードは管理者から受け取ってください。</p>
+      <div class="warn" style="margin-top:12px"><b>取扱注意</b>　ここで見られるデータは ${esc(CFG.TEAM_NAME || 'チーム')} の内部資料です。ログインした人だけが使い、チーム外への提供・SNS等への投稿・引用・転載・他システムへの流用はしないでください。IDとパスワードを人に渡さないでください。</div></div></div>`;
   }
   function popts(sel) { return `<option value="">（どの選手か選ぶ）</option>` + (admin ? admin.players : []).map(p => `<option value="${esc(p.id)}" ${p.id === sel ? 'selected' : ''}>${esc(p.name)}${p.isP ? '（投手）' : ''}</option>`).join(''); }
   function adminView() {

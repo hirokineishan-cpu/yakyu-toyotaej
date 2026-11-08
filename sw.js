@@ -3,7 +3,7 @@
 // 方針：アプリ本体は「保存してあるものをすぐ出す。裏で新しいものを取りに行って
 // 次回に備える」。毎回ネットを待たないので、開いた瞬間に出る。
 // そのぶん、更新は「次に開いたとき」に反映される（開き直せば入る）。
-const CACHE = "hsp-s2-toyotaej-v1";
+const CACHE = "hsp-s2-toyotaej-v2";
 const PREFIX = CACHE.replace(/v\d+$/, "");   // 例）hsp-s2-aomoriyamada-
 const SHELL = ["./", "./index.html", "./mod-physical.js", "./mod-trackman.js", "./mod-session.js", "./mod-login.js",
                "./manifest.json", "./icon-192.png", "./icon-512.png"];

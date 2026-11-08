@@ -151,6 +151,10 @@ body.t-record{ overflow:hidden }
 main{ margin-top:calc(var(--barH) + env(safe-area-inset-top)) }
 main > section[hidden]{ display:none !important }
 #boot{ padding:28px 18px; color:var(--muted); font-size:13px; text-align:center }
+/* 取扱注意（全タブ共通・印刷にも出る） */
+#legal{ max-width:1180px; margin:0 auto; padding:14px 14px 28px; font-size:11px; line-height:1.7; color:var(--muted); border-top:1px solid var(--line) }
+#legal b{ color:var(--ink2) }
+html.prt #legal{ font-size:9px; padding:6px 0 0; border-top:1px solid #999; color:#555 }
 #boot b{ display:block; color:var(--ink); font-size:14px; margin-bottom:6px }
 
 @media (max-width:560px){
@@ -233,6 +237,7 @@ html.prt,html.prt[data-theme="dark"]{
   <section id="tab-session" hidden></section>
   <section id="tab-me" hidden></section>
   <div id="boot"><b>読み込んでいます…</b>しばらく待っても変わらないときは、画面を下に引いて更新してください。</div>
+  <footer id="legal"><b>取扱注意</b>　このシステムに表示・出力されるデータ（計測値・名簿・コメント・動画URL・PDF・画面写真を含む）は <span id="legal-team">チーム</span> の内部資料です。チーム関係者以外への提供、SNS等への投稿、資料・記事への引用・転載、他のシステムやサービスへの流用を禁じます。</footer>
 </main>
 
 <script type="module">
@@ -253,7 +258,7 @@ const FILES = { physical:'./mod-physical.js', trackman:'./mod-trackman.js', sess
 const TABKEY = 'hsp-tab-' + CFG.TEAM_ID + CFG.STORE;
 const loaded = {};
 const boot = document.getElementById('boot');
-if (CFG.TEAM_NAME) document.getElementById('bar-team').textContent = CFG.TEAM_NAME;
+if (CFG.TEAM_NAME) { document.getElementById('bar-team').textContent = CFG.TEAM_NAME; const lt = document.getElementById('legal-team'); if (lt) lt.textContent = CFG.TEAM_NAME; }
 
 /* だれがログインしているかで、出すタブを決める（中身はサーバー側でも断っている）。
      スタッフ（管理・強化）… Trackman・フィジカル・セッション記録・ログイン（アカウント）
